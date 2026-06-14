@@ -1,25 +1,58 @@
-# RAG Data Analyzer 🤖📊
+RAG Data Analyzer
+=================
 
-Este projeto consiste em um **Agente de IA** especializado em análise de dados e documentos, utilizando a arquitetura **RAG (Retrieval-Augmented Generation)**. 
+Um sistema profissional de RAG (Retrieval-Augmented Generation) desenvolvido em Python para análise de documentos extensos e extração de insights precisos utilizando Inteligência Artificial. O sistema permite conversar com PDFs de centenas de páginas, mantendo o contexto semântico e garantindo respostas baseadas estritamente nos dados fornecidos.
 
-O objetivo é permitir que usuários interajam com grandes volumes de dados de forma semântica, obtendo insights precisos e fundamentados em fontes específicas.
+Recursos Principais
+-------------------
+* Arquitetura Moderna: Construído com LCEL (LangChain Expression Language), garantindo um pipeline de dados limpo, modular e escalável, substituindo as antigas cadeias legadas.
+* Inferência de Alta Velocidade: Integração nativa com a API da Groq, utilizando o modelo Llama-3.3-70b-versatile para processamento de linguagem natural com latência ultrabaixa.
+* Gestão de Ambiente Segura: Gerenciamento de credenciais e variáveis de ambiente isoladas utilizando python-dotenv.
+* Processamento Robusto de PDFs: Ingestão, divisão de texto (chunking) e vetorização otimizadas para documentos complexos.
 
-## 🚀 Tech Stack
-- **Linguagem:** Python 3.10+
-- **Orquestração:** LangChain / LangGraph
-- **LLM:** Llama 3 (via Groq API) - *Foco em baixa latência*
-- **Vector Database:** ChromaDB
-- **Embeddings:** HuggingFace (all-MiniLM-L6-v2)
+Pré-requisitos
+--------------
+* Python 3.8 ou superior
+* Chave de API da Groq (GROQ_API_KEY)
 
-## 🛠️ Arquitetura do Sistema
-1. **Ingestão:** Processamento de arquivos (PDF/CSV) e quebra em pedaços (Chunks).
-2. **Vetorização:** Geração de embeddings locais para eficiência de custo e memória.
-3. **Retrieval:** Busca semântica no banco de vetores ChromaDB.
-4. **Geração:** Processamento da consulta via Llama 3 para resposta contextualizada.
+Instalação e Configuração
+-------------------------
+1. Clone o repositório e acesse a pasta do projeto.
 
-## 🔧 Como rodar
-1. Clone o repositório.
-2. Crie um ambiente virtual: `python -m venv venv`.
-3. Instale as dependências: `pip install -r requirements.txt`.
-4. Configure sua `GROQ_API_KEY` no arquivo `.env`.
-5. Execute `python src/agent.py`.
+2. Crie e ative um ambiente virtual:
+   python -m venv venv
+   .\venv\Scripts\activate  (Windows)
+   source venv/bin/activate (Linux/Mac)
+
+3. Instale as dependências do projeto:
+   pip install langchain langchain-core langchain-community langchain-groq chromadb sentence-transformers pypdf python-dotenv
+
+4. Na raiz do projeto, crie um arquivo chamado .env e adicione sua chave de API:
+   GROQ_API_KEY=sua_chave_da_groq_aqui
+
+Como Usar
+---------
+1. Insira o arquivo PDF que deseja analisar dentro da pasta data/ e certifique-se de que o nome corresponde ao configurado no código (ex: documento.pdf).
+
+2. Execute o arquivo principal da aplicação:
+   python main.py
+
+3. O sistema realizará a leitura e vetorização do documento. Em seguida, um terminal interativo será aberto para você fazer perguntas em linguagem natural sobre o conteúdo do arquivo. Para encerrar, digite "sair".
+
+Estrutura do Projeto
+--------------------
+* data/ : Diretório destinado aos documentos de entrada (ex: PDFs).
+* src/ : Contém os módulos principais do sistema.
+  * agent.py : Configuração do modelo de linguagem (Groq) e construção da cadeia RAG utilizando a sintaxe moderna LCEL.
+  * ingestion.py : Lógica de carregamento de documentos, divisão em chunks e armazenamento no banco de dados vetorial.
+* main.py : Ponto de entrada da aplicação, responsável por orquestrar a ingestão e o loop de interação com o usuário.
+* .env : Arquivo de configuração de variáveis de ambiente (deve ser ignorado no controle de versão).
+
+Tecnologias Utilizadas
+----------------------
+* Python
+* LangChain (Core, Community e Groq)
+* Groq API (Llama 3.3 70B)
+* ChromaDB (Banco de dados vetorial)
+* HuggingFace (Sentence Transformers para embeddings)
+* PyPDF

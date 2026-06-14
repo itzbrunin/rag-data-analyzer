@@ -1,37 +1,38 @@
-import sys
-from src.ingestion import load_document, create_vectorstore
-from src.agent import create_rag_agent
+import os
+from dotenv import load_dotenv
+
+# Carrega as variáveis de ambiente do arquivo .env de qualquer outra coisa
+load_dotenv()
+
+
+from src.ingestion import load_and_ingest_data
+from src.agent import get_rag_agent
 
 def main():
-    # Caminho para o documento de exemplo
-    file_path = "data/document.pdf"
+    # Caminho para o arquivo PDF
+    file_path = 'data/documento.pdf'
     
-    print("Iniciando o processamento do documento...")
+    print('Iniciando a ingestão de dados...')
+    # Carrega e ingere os dados do arquivo
+    vectorstore = load_and_ingest_data(file_path, file_type='pdf')
     
-    # Carrega o documento e cria o banco de vetores
-    try:
-        docs = load_document(file_path)
-        vectorstore = create_vectorstore(docs)
+    print('Configurando o agente RAG...')
+    # Inicializa o agente RAG com o vectorstore
+    agent = get_rag_agent(vectorstore)
+    
+    print('Sistema pronto! Digite "sair" para encerrar.')
+    
+    # Loop principal para interação com o usuário
+    while True:
+        user_query = input('\nPergunta: ')
         
-        # Cria o agente RAG
-        agent = create_rag_agent(vectorstore)
-        
-        print("Sistema pronto! Digite 'sair' para encerrar.")
-        
-        # Loop principal para perguntas do usuário
-        while True:
-            query = input("\nPergunta: ")
-            if query.lower() in ['sair', 'exit', 'quit']:
-                print("Encerrando o programa.")
-                break
+        if user_query.lower() in ['sair', 'exit', 'quit']:
+            print('Encerrando o programa.')
+            break
             
-            # Executa a consulta no agente
-            response = agent.invoke({"input": query})
-            print(f"Resposta: {response['output']}")
-            
-    except Exception as e:
-        print(f"Erro ao executar o sistema: {e}")
-        sys.exit(1)
+        # Invoca o agente para processar a pergunta
+        response = agent.invoke({'query': user_query})
+        print(f'Resposta: {response}')
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

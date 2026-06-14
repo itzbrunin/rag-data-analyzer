@@ -1,52 +1,38 @@
 import os
-from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-from langchain.prompts import PromptTemplate
-from langchain.chains.retrieval_qa.base import RetrievalQA
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 
-# Carrega variáveis do arquivo .env (como GROQ_API_KEY)
-load_dotenv()
+def get_rag_agent(vectorstore):
+    # Inicializa o modelo ChatGroq com o modelo atualizado e suportado
+    
+    llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0)
 
+    # Define o template de prompt
+    template = """Use as seguintes partes do contexto para responder à pergunta ao final. Se você não souber a resposta, apenas diga que não sabe, não tente inventar uma resposta.
 
-def create_rag_agent(vectorstore):
-    # Obtém a chave da Groq do ambiente
-    groq_api_key = os.getenv("GROQ_API_KEY")
-    if not groq_api_key:
-        raise ValueError("A variável GROQ_API_KEY não foi encontrada no .env")
-
-    # Inicializa o modelo LLM da Groq (Llama 3 / Mixtral)
-    llm = ChatGroq(
-        temperature=0,                    # Respostas mais estáveis
-        groq_api_key=groq_api_key,        # Autenticação
-        model_name="mixtral-8x7b-32768"   # Modelo rápido e compatível com LangChain
-    )
-
-    # Template básico para orientar o modelo
-    template = """
-    Use o contexto abaixo para responder à pergunta.
-    Se a resposta não estiver no contexto, diga que não sabe.
-
+    Contexto:
     {context}
 
     Pergunta: {question}
-    Resposta:
-    """
-
-    # Monta o objeto PromptTemplate para LangChain
-    prompt = PromptTemplate(
-        template=template,
-        input_variables=["context", "question"]
-    )
-
-    # Cria o retriever baseado no ChromaDB
+    Resposta útil:"""
+    
+    prompt = PromptTemplate.from_template(template)
     retriever = vectorstore.as_retriever()
 
-    # Cria a cadeia RAG (retrieval + geração)
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",                 # Método simples: junta chunks e envia ao LLM
-        retriever=retriever,
-        chain_type_kwargs={"prompt": prompt}
+    # Função auxiliar para formatar os documentos recuperados em um único texto
+    def format_docs(docs):
+        return "\n\n".join(doc.page_content for doc in docs)
+
+    # Cria a cadeia RAG usando a sintaxe moderna do LangChain (LCEL)
+    rag_chain = (
+        {
+            "context": lambda x: format_docs(retriever.invoke(x["query"])), 
+            "question": lambda x: x["query"]
+        }
+        | prompt
+        | llm
+        | StrOutputParser()
     )
 
-    return qa_chain
+    return rag_chain
